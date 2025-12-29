@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐛 瞌睡蟲檢查器 | Sleepy Bug Detector</title>
+    <meta name="description" content="用 AR 技術偵測你身上的瞌睡蟲！一個有趣的惡作劇 App">
+    <link rel="stylesheet" href="style.css">
+    <!-- Face-API.js for face detection -->
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script defer src="app.js"></script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">載入 AI 偵測模型中...</p>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="title">
+                <span class="title-icon">🐛</span>
+                瞌睡蟲檢查器
+                <span class="title-badge">v2.0</span>
+            </h1>
+            <p class="subtitle">進階生物能量掃描系統</p>
+        </header>
+
+        <!-- Camera Container -->
+        <div class="camera-wrapper">
+            <div class="camera-container" id="camera-container">
+                <!-- Video Element -->
+                <video id="video" autoplay muted playsinline></video>
+                
+                <!-- Canvas for AR overlay -->
+                <canvas id="overlay"></canvas>
+
+                <!-- Scan Line Animation -->
+                <div class="scan-line" id="scan-line"></div>
+
+                <!-- Corner Decorations -->
+                <div class="corner corner-tl"></div>
+                <div class="corner corner-tr"></div>
+                <div class="corner corner-bl"></div>
+                <div class="corner corner-br"></div>
+
+                <!-- Status Display -->
+                <div class="status-display" id="status-display">
+                    <span class="status-dot"></span>
+                    <span class="status-text">待機中</span>
+                </div>
+
+                <!-- Scanning Message -->
+                <div class="scan-message" id="scan-message">
+                    <p class="scan-text" id="scan-text">正在分析腦波...</p>
+                </div>
+
+                <!-- Sleepy Bug Character (CSS-drawn) -->
+                <div class="sleepy-bug" id="sleepy-bug">
+                    <div class="bug-zzz">💤</div>
+                    <div class="bug-body">
+                        <div class="bug-face">
+                            <div class="bug-eye left"></div>
+                            <div class="bug-eye right"></div>
+                            <div class="bug-mouth"></div>
+                        </div>
+                        <div class="bug-hat"></div>
+                        <div class="snot-bubble"></div>
+                    </div>
+                    <div class="bug-legs">
+                        <div class="bug-leg left"></div>
+                        <div class="bug-leg right"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Start Button -->
+            <button class="start-btn" id="start-btn">
+                <span class="btn-icon">📷</span>
+                開始掃描
+            </button>
+        </div>
+
+        <!-- Diagnosis Report -->
+        <div class="report-card" id="report-card">
+            <div class="report-header">
+                <span class="report-icon">📋</span>
+                <h2>瞌睡蟲檢測報告</h2>
+            </div>
+            <div class="report-body">
+                <div class="report-item">
+                    <span class="report-label">瞌睡指數</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="sleepy-progress"></div>
+                    </div>
+                    <span class="report-value" id="sleepy-index">87%</span>
+                </div>
+                <div class="report-item">
+                    <span class="report-label">寄生時間</span>
+                    <span class="report-value" id="parasite-time">約 3 小時 24 分</span>
+                </div>
+                <div class="report-item">
+                    <span class="report-label">蟲體狀態</span>
+                    <span class="report-value status-active" id="bug-status">活躍中 🐛</span>
+                </div>
+                <div class="report-prescription">
+                    <span class="prescription-label">💊 處方建議</span>
+                    <p class="prescription-text" id="prescription">立刻請客喝咖啡驅蟲！</p>
+                </div>
+            </div>
+            <button class="scan-again-btn" id="scan-again-btn">
+                <span>🔄</span> 再次掃描
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>⚠️ 本檢測結果純屬娛樂，如有雷同純屬巧合</p>
+        </footer>
+    </div>
+</body>
+</html>
