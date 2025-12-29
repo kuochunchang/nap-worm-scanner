@@ -42,7 +42,10 @@ const elements = {
     scanMessage: document.getElementById('scan-message'),
     scanText: document.getElementById('scan-text'),
     statusDisplay: document.getElementById('status-display'),
-    sleepyBug: document.getElementById('sleepy-bug'),
+    sleepyBugs: [
+        document.getElementById('sleepy-bug-1'),
+        document.getElementById('sleepy-bug-2')
+    ],
     reportCard: document.getElementById('report-card'),
     sleepyProgress: document.getElementById('sleepy-progress'),
     sleepyIndex: document.getElementById('sleepy-index'),
@@ -60,6 +63,8 @@ const elements = {
 let isScanning = false;
 let faceDetectionInterval = null;
 let audioContext = null;
+let detectedFaces = []; // Store all detected faces
+let bugTargetSide = null; // null = each face has own bug, 'left' or 'right' = all bugs on one side
 
 // ===== Audio System =====
 class ScanAudio {
@@ -166,12 +171,13 @@ async function detectFace() {
     });
 
     try {
-        const detection = await faceapi.detectSingleFace(elements.video, options)
+        // Detect all faces (up to 2)
+        const detections = await faceapi.detectAllFaces(elements.video, options)
             .withFaceLandmarks(true);
-        return detection;
+        return detections.slice(0, 2); // Return max 2 faces
     } catch (error) {
         console.error('Face detection error:', error);
-        return null;
+        return [];
     }
 }
 
@@ -233,16 +239,101 @@ function positionBug(detection) {
     const bugX = videoRect.width - ((box.x + box.width / 2) * scaleX);
     const bugY = (box.y * scaleY) - 20;
 
-    elements.sleepyBug.style.left = `${bugX}px`;
-    elements.sleepyBug.style.top = `${bugY}px`;
+    return { x: bugX, y: bugY, faceBox: box };
 }
 
-function showBug() {
-    elements.sleepyBug.classList.add('visible');
+// Sort faces by X position (left to right in mirrored view)
+function sortFacesByPosition(faces) {
+    return [...faces].sort((a, b) => {
+        // In mirrored view, higher X value = left side of screen
+        const aX = a.detection.box.x + a.detection.box.width / 2;
+        const bX = b.detection.box.x + b.detection.box.width / 2;
+        return bX - aX; // Higher X first (appears on left in mirrored view)
+    });
 }
 
-function hideBug() {
-    elements.sleepyBug.classList.remove('visible');
+function positionAllBugs(faces) {
+    if (!faces || faces.length === 0) return;
+
+    const sortedFaces = sortFacesByPosition(faces);
+    detectedFaces = sortedFaces;
+
+    const videoRect = elements.video.getBoundingClientRect();
+    const scaleX = videoRect.width / elements.video.videoWidth;
+    const scaleY = videoRect.height / elements.video.videoHeight;
+
+    // Calculate positions for all faces
+    const facePositions = sortedFaces.map(face => {
+        const box = face.detection.box;
+        return {
+            x: videoRect.width - ((box.x + box.width / 2) * scaleX),
+            y: (box.y * scaleY) - 20,
+            box: box
+        };
+    });
+
+    if (bugTargetSide === null) {
+        // Normal mode: each face gets one bug
+        facePositions.forEach((pos, index) => {
+            if (index < elements.sleepyBugs.length) {
+                elements.sleepyBugs[index].style.left = `${pos.x}px`;
+                elements.sleepyBugs[index].style.top = `${pos.y}px`;
+            }
+        });
+        // Hide extra bugs
+        for (let i = facePositions.length; i < elements.sleepyBugs.length; i++) {
+            elements.sleepyBugs[i].classList.remove('visible');
+        }
+    } else {
+        // Targeted mode: all bugs go to one face with stacking
+        const targetIndex = bugTargetSide === 'left' ? 0 : Math.min(1, facePositions.length - 1);
+        const targetPos = facePositions[targetIndex] || facePositions[0];
+
+        if (targetPos) {
+            const bugCount = Math.min(facePositions.length, elements.sleepyBugs.length);
+            const stackOffset = 35; // Vertical spacing between stacked bugs
+
+            for (let i = 0; i < bugCount; i++) {
+                elements.sleepyBugs[i].style.left = `${targetPos.x}px`;
+                elements.sleepyBugs[i].style.top = `${targetPos.y - (i * stackOffset)}px`;
+                elements.sleepyBugs[i].classList.add('visible');
+            }
+            // Hide unused bugs
+            for (let i = bugCount; i < elements.sleepyBugs.length; i++) {
+                elements.sleepyBugs[i].classList.remove('visible');
+            }
+        }
+    }
+}
+
+function showBugs(count = 1) {
+    const showCount = Math.min(count, elements.sleepyBugs.length);
+    for (let i = 0; i < showCount; i++) {
+        elements.sleepyBugs[i].classList.add('visible');
+    }
+}
+
+function hideAllBugs() {
+    elements.sleepyBugs.forEach(bug => bug.classList.remove('visible'));
+}
+
+// Handle click on camera container to move bugs
+function handleCameraClick(event) {
+    if (detectedFaces.length < 2) return; // Need at least 2 faces
+
+    const rect = elements.cameraContainer.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const midpoint = rect.width / 2;
+
+    // Determine which side was clicked
+    if (clickX < midpoint) {
+        bugTargetSide = 'left';
+    } else {
+        bugTargetSide = 'right';
+    }
+
+    // Immediately reposition bugs
+    positionAllBugs(detectedFaces);
 }
 
 function generateReport() {
@@ -521,9 +612,11 @@ async function startScan() {
     if (isScanning) return;
     isScanning = true;
 
-    // Reset UI
-    hideBug();
+    // Reset UI and state
+    hideAllBugs();
     hideReport();
+    bugTargetSide = null;
+    detectedFaces = [];
     elements.startBtn.disabled = true;
     elements.startBtn.innerHTML = '<span class="btn-icon">🔍</span> 掃描中...';
 
@@ -554,12 +647,12 @@ async function startScan() {
     }, CONFIG.scanDuration / CONFIG.scanMessages.length);
 
     // Start face detection
-    let detectedFace = null;
+    let lastDetections = [];
     const detectInterval = setInterval(async () => {
-        const detection = await detectFace();
-        if (detection) {
-            detectedFace = detection;
-            positionBug(detection);
+        const detections = await detectFace();
+        if (detections && detections.length > 0) {
+            lastDetections = detections;
+            positionAllBugs(detections);
         }
     }, 100);
 
@@ -570,19 +663,26 @@ async function startScan() {
         elements.scanLine.classList.remove('active');
         hideScanMessage();
 
-        if (detectedFace) {
-            // Face detected - show bug and report
-            updateStatus('偵測到瞌睡蟲！', 'detected');
+        if (lastDetections.length > 0) {
+            // Face(s) detected - show bugs and report
+            const faceCount = lastDetections.length;
+            const statusText = faceCount > 1
+                ? `偵測到 ${faceCount} 隻瞌睡蟲！`
+                : '偵測到瞌睡蟲！';
+            updateStatus(statusText, 'detected');
             scanAudio.playDetectionSound();
-            positionBug(detectedFace);
-            showBug();
+            positionAllBugs(lastDetections);
+            showBugs(faceCount);
             generateReport();
 
-            // Keep updating bug position
+            // Add click handler for multi-face interaction
+            elements.cameraContainer.addEventListener('click', handleCameraClick);
+
+            // Keep updating bug positions
             faceDetectionInterval = setInterval(async () => {
-                const detection = await detectFace();
-                if (detection) {
-                    positionBug(detection);
+                const detections = await detectFace();
+                if (detections && detections.length > 0) {
+                    positionAllBugs(detections);
                 }
             }, 100);
         } else {
@@ -604,7 +704,14 @@ function resetScan() {
         clearInterval(faceDetectionInterval);
         faceDetectionInterval = null;
     }
-    hideBug();
+    // Remove click handler
+    elements.cameraContainer.removeEventListener('click', handleCameraClick);
+
+    // Reset state
+    bugTargetSide = null;
+    detectedFaces = [];
+
+    hideAllBugs();
     hideReport();
     hideScanMessage();
     elements.scanLine.classList.remove('active');

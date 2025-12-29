@@ -318,40 +318,40 @@ body {
     font-weight: 500;
 }
 
-/* ===== Sleepy Bug Character ===== */
+/* ===== Sleepy Worm Character ===== */
 .sleepy-bug {
     position: absolute;
-    width: 80px;
-    height: 100px;
+    width: 90px;
+    height: 120px;
     transform: translate(-50%, -100%);
     opacity: 0;
-    transition: opacity 0.5s ease;
+    transition: opacity 0.5s ease, left 0.3s ease, top 0.3s ease;
     pointer-events: none;
     z-index: 10;
 }
 
 .sleepy-bug.visible {
     opacity: 1;
-    animation: bugFloat 3s ease-in-out infinite;
+    animation: wormFloat 3s ease-in-out infinite;
 }
 
-@keyframes bugFloat {
+@keyframes wormFloat {
 
     0%,
     100% {
-        transform: translate(-50%, -100%) translateY(0);
+        transform: translate(-50%, -100%) translateY(0) rotate(-5deg);
     }
 
     50% {
-        transform: translate(-50%, -100%) translateY(-10px);
+        transform: translate(-50%, -100%) translateY(-8px) rotate(5deg);
     }
 }
 
 .bug-zzz {
     position: absolute;
-    top: -10px;
-    right: -5px;
-    font-size: 20px;
+    top: -5px;
+    right: 0px;
+    font-size: 18px;
     animation: zzzFloat 2s ease-in-out infinite;
 }
 
@@ -364,130 +364,206 @@ body {
     }
 
     50% {
-        transform: translateY(-10px) scale(1.2);
+        transform: translateY(-8px) scale(1.1);
         opacity: 1;
     }
 }
 
-.bug-body {
+/* Worm Body Container */
+.worm-body {
     position: relative;
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
-    border-radius: 50%;
-    margin: 15px auto 0;
-    box-shadow:
-        inset -5px -5px 15px rgba(0, 0, 0, 0.2),
-        inset 5px 5px 15px rgba(255, 255, 255, 0.2),
-        0 5px 20px rgba(139, 92, 246, 0.4);
-}
-
-.bug-face {
-    position: absolute;
-    inset: 0;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding-top: 5px;
+    animation: wormWriggle 2s ease-in-out infinite;
 }
 
-.bug-eye {
-    width: 12px;
-    height: 4px;
-    background: #1a1a2e;
-    border-radius: 2px;
+@keyframes wormWriggle {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-2px);
+    }
+
+    75% {
+        transform: translateX(2px);
+    }
+}
+
+/* Worm Head */
+.worm-head {
     position: relative;
+    width: 45px;
+    height: 40px;
+    background: linear-gradient(180deg, #ffb6c1 0%, #ff91a4 100%);
+    border-radius: 50% 50% 45% 45%;
+    box-shadow:
+        inset -3px -3px 8px rgba(0, 0, 0, 0.15),
+        inset 3px 3px 8px rgba(255, 255, 255, 0.4),
+        0 4px 12px rgba(255, 145, 164, 0.4);
+    z-index: 5;
 }
 
-.bug-eye::after {
-    content: '';
+/* Worm Eyes - sleepy curved lines */
+.worm-eye {
     position: absolute;
-    top: -3px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 14px;
+    top: 14px;
+    width: 10px;
     height: 3px;
-    background: #7c3aed;
-    border-radius: 2px;
+    background: #4a2c2a;
+    border-radius: 3px;
 }
 
-.bug-mouth {
+.worm-eye.left {
+    left: 10px;
+    transform: rotate(-5deg);
+}
+
+.worm-eye.right {
+    right: 10px;
+    transform: rotate(5deg);
+}
+
+/* Rosy cheeks */
+.worm-cheek {
     position: absolute;
-    bottom: 18px;
+    top: 20px;
+    width: 8px;
+    height: 5px;
+    background: rgba(255, 100, 100, 0.5);
+    border-radius: 50%;
+}
+
+.worm-cheek.left {
+    left: 5px;
+}
+
+.worm-cheek.right {
+    right: 5px;
+}
+
+/* Sleepy yawning mouth */
+.worm-mouth {
+    position: absolute;
+    bottom: 8px;
     left: 50%;
     transform: translateX(-50%);
     width: 8px;
-    height: 4px;
-    background: #1a1a2e;
-    border-radius: 0 0 4px 4px;
-    animation: yawn 4s ease-in-out infinite;
+    height: 5px;
+    background: #4a2c2a;
+    border-radius: 0 0 50% 50%;
+    animation: wormYawn 4s ease-in-out infinite;
 }
 
-@keyframes yawn {
+@keyframes wormYawn {
 
     0%,
     70%,
     100% {
         width: 8px;
-        height: 4px;
+        height: 5px;
     }
 
     80%,
     90% {
-        width: 14px;
-        height: 10px;
-        border-radius: 0 0 7px 7px;
+        width: 12px;
+        height: 8px;
     }
 }
 
-.bug-hat {
-    position: absolute;
-    top: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 30px;
-    height: 20px;
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-    border-radius: 50% 50% 0 0;
-    border: 2px solid #d97706;
+/* Worm Body Segments */
+.worm-segment {
+    width: 38px;
+    height: 18px;
+    background: linear-gradient(180deg, #ffb6c1 0%, #ffa0b0 100%);
+    border-radius: 50%;
+    margin-top: -6px;
+    box-shadow:
+        inset -2px -2px 5px rgba(0, 0, 0, 0.1),
+        inset 2px 2px 5px rgba(255, 255, 255, 0.3);
 }
 
-.bug-hat::after {
-    content: '';
-    position: absolute;
-    top: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 10px;
-    height: 10px;
-    background: #fbbf24;
-    border-radius: 50%;
+.worm-segment.seg1 {
+    width: 40px;
+    animation: segmentWiggle 2s ease-in-out infinite 0.1s;
+}
+
+.worm-segment.seg2 {
+    width: 36px;
+    animation: segmentWiggle 2s ease-in-out infinite 0.2s;
+}
+
+.worm-segment.seg3 {
+    width: 32px;
+    animation: segmentWiggle 2s ease-in-out infinite 0.3s;
+}
+
+@keyframes segmentWiggle {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(3px);
+    }
+}
+
+/* Worm Tail */
+.worm-tail {
+    width: 20px;
+    height: 14px;
+    background: linear-gradient(180deg, #ffa0b0 0%, #ff8599 100%);
+    border-radius: 50% 50% 60% 60%;
+    margin-top: -5px;
+    animation: tailWag 1.5s ease-in-out infinite;
+}
+
+@keyframes tailWag {
+
+    0%,
+    100% {
+        transform: translateX(0) rotate(0deg);
+    }
+
+    25% {
+        transform: translateX(-4px) rotate(-10deg);
+    }
+
+    75% {
+        transform: translateX(4px) rotate(10deg);
+    }
 }
 
 /* Snot Bubble */
 .snot-bubble {
     position: absolute;
-    bottom: 10px;
-    right: -5px;
-    width: 20px;
-    height: 20px;
-    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(200, 220, 255, 0.4));
+    top: 28px;
+    right: -8px;
+    width: 16px;
+    height: 16px;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(200, 220, 255, 0.5));
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.6);
     animation: bubbleBreath 3s ease-in-out infinite;
+    z-index: 6;
 }
 
 @keyframes bubbleBreath {
 
     0%,
     100% {
-        transform: scale(0.6);
+        transform: scale(0.5);
         opacity: 0.7;
     }
 
     50% {
-        transform: scale(1.2);
+        transform: scale(1.1);
         opacity: 1;
     }
 
@@ -497,23 +573,9 @@ body {
     }
 
     54% {
-        transform: scale(0.6);
+        transform: scale(0.5);
         opacity: 0.7;
     }
-}
-
-.bug-legs {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: -5px;
-}
-
-.bug-leg {
-    width: 8px;
-    height: 15px;
-    background: #8b5cf6;
-    border-radius: 0 0 4px 4px;
 }
 
 /* ===== Start Button ===== */
