@@ -53,10 +53,7 @@ const elements = {
     bugStatus: document.getElementById('bug-status'),
     prescription: document.getElementById('prescription'),
     scanAgainBtn: document.getElementById('scan-again-btn'),
-    cameraContainer: document.getElementById('camera-container'),
-    downloadBtn: document.getElementById('download-btn'),
-    shareBtn: document.getElementById('share-btn'),
-    shareCanvas: document.getElementById('share-canvas')
+    cameraContainer: document.getElementById('camera-container')
 };
 
 // ===== State =====
@@ -353,9 +350,6 @@ function generateReport() {
     // Random bug status
     const bugStatus = CONFIG.bugStatuses[Math.floor(Math.random() * CONFIG.bugStatuses.length)];
 
-    // Save data for share image
-    saveReportData(sleepyIndex, hours, minutes, bugStatus, prescription);
-
     // Update DOM
     elements.sleepyIndex.textContent = `${sleepyIndex}%`;
     elements.sleepyProgress.style.width = `${sleepyIndex}%`;
@@ -369,245 +363,6 @@ function generateReport() {
 
 function hideReport() {
     elements.reportCard.classList.remove('visible');
-}
-
-// ===== Screenshot & Share Functions =====
-let currentReportData = null;
-
-function saveReportData(sleepyIndex, hours, minutes, bugStatus, prescription) {
-    currentReportData = { sleepyIndex, hours, minutes, bugStatus, prescription };
-}
-
-async function generateShareImage() {
-    const canvas = elements.shareCanvas;
-    const ctx = canvas.getContext('2d');
-
-    // Set canvas size (portrait orientation for social media)
-    const width = 600;
-    const height = 800;
-    canvas.width = width;
-    canvas.height = height;
-
-    // Background gradient
-    const bgGradient = ctx.createLinearGradient(0, 0, 0, height);
-    bgGradient.addColorStop(0, '#0a0a0f');
-    bgGradient.addColorStop(1, '#12121a');
-    ctx.fillStyle = bgGradient;
-    ctx.fillRect(0, 0, width, height);
-
-    // Add subtle glow effect
-    const glowGradient = ctx.createRadialGradient(width / 2, 100, 0, width / 2, 100, 300);
-    glowGradient.addColorStop(0, 'rgba(0, 255, 136, 0.1)');
-    glowGradient.addColorStop(1, 'transparent');
-    ctx.fillStyle = glowGradient;
-    ctx.fillRect(0, 0, width, height);
-
-    // Draw camera frame with captured image
-    const frameX = 50;
-    const frameY = 80;
-    const frameWidth = 500;
-    const frameHeight = 380;
-
-    // Frame border
-    ctx.strokeStyle = 'rgba(0, 255, 136, 0.5)';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(frameX, frameY, frameWidth, frameHeight);
-
-    // Draw video frame (mirrored)
-    ctx.save();
-    ctx.translate(frameX + frameWidth, frameY);
-    ctx.scale(-1, 1);
-    ctx.drawImage(elements.video, 0, 0, frameWidth, frameHeight);
-    ctx.restore();
-
-    // Draw corner decorations
-    ctx.strokeStyle = '#00ff88';
-    ctx.lineWidth = 3;
-    const cornerSize = 25;
-    // Top-left
-    ctx.beginPath();
-    ctx.moveTo(frameX + cornerSize, frameY);
-    ctx.lineTo(frameX, frameY);
-    ctx.lineTo(frameX, frameY + cornerSize);
-    ctx.stroke();
-    // Top-right
-    ctx.beginPath();
-    ctx.moveTo(frameX + frameWidth - cornerSize, frameY);
-    ctx.lineTo(frameX + frameWidth, frameY);
-    ctx.lineTo(frameX + frameWidth, frameY + cornerSize);
-    ctx.stroke();
-    // Bottom-left
-    ctx.beginPath();
-    ctx.moveTo(frameX + cornerSize, frameY + frameHeight);
-    ctx.lineTo(frameX, frameY + frameHeight);
-    ctx.lineTo(frameX, frameY + frameHeight - cornerSize);
-    ctx.stroke();
-    // Bottom-right
-    ctx.beginPath();
-    ctx.moveTo(frameX + frameWidth - cornerSize, frameY + frameHeight);
-    ctx.lineTo(frameX + frameWidth, frameY + frameHeight);
-    ctx.lineTo(frameX + frameWidth, frameY + frameHeight - cornerSize);
-    ctx.stroke();
-
-    // Draw sleepy bug emoji on the image
-    ctx.font = '50px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('🐛💤', frameX + frameWidth / 2, frameY + 60);
-
-    // Title
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 32px "Segoe UI", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('🐛 瞌睡蟲檢測報告', width / 2, 510);
-
-    // Divider line
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(100, 530);
-    ctx.lineTo(500, 530);
-    ctx.stroke();
-
-    // Report content
-    if (currentReportData) {
-        ctx.textAlign = 'left';
-        ctx.font = '18px "Segoe UI", sans-serif';
-        ctx.fillStyle = '#a0a0b0';
-
-        const startY = 570;
-        const lineHeight = 45;
-
-        // Sleepy Index with progress bar
-        ctx.fillText('瞌睡指數', 80, startY);
-        // Progress bar background
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-        ctx.fillRect(200, startY - 15, 250, 20);
-        // Progress bar fill
-        const progressGradient = ctx.createLinearGradient(200, 0, 450, 0);
-        progressGradient.addColorStop(0, '#00ff88');
-        progressGradient.addColorStop(1, '#00d4ff');
-        ctx.fillStyle = progressGradient;
-        ctx.fillRect(200, startY - 15, 250 * (currentReportData.sleepyIndex / 100), 20);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 18px "Segoe UI", sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText(`${currentReportData.sleepyIndex}%`, 530, startY);
-
-        ctx.textAlign = 'left';
-        ctx.font = '18px "Segoe UI", sans-serif';
-        ctx.fillStyle = '#a0a0b0';
-
-        // Parasite time
-        ctx.fillText('寄生時間', 80, startY + lineHeight);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 18px "Segoe UI", sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText(`約 ${currentReportData.hours} 小時 ${currentReportData.minutes} 分`, 530, startY + lineHeight);
-
-        ctx.textAlign = 'left';
-        ctx.font = '18px "Segoe UI", sans-serif';
-        ctx.fillStyle = '#a0a0b0';
-
-        // Bug status
-        ctx.fillText('蟲體狀態', 80, startY + lineHeight * 2);
-        ctx.fillStyle = '#ff6b9d';
-        ctx.font = 'bold 18px "Segoe UI", sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText(currentReportData.bugStatus, 530, startY + lineHeight * 2);
-
-        // Prescription box
-        ctx.fillStyle = 'rgba(255, 107, 157, 0.15)';
-        ctx.strokeStyle = 'rgba(255, 107, 157, 0.4)';
-        ctx.lineWidth = 2;
-        const boxY = startY + lineHeight * 2.5;
-        ctx.beginPath();
-        ctx.roundRect(60, boxY, 480, 60, 12);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#ff6b9d';
-        ctx.font = '14px "Segoe UI", sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('💊 處方建議', 80, boxY + 25);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 18px "Segoe UI", sans-serif';
-        ctx.fillText(currentReportData.prescription, 80, boxY + 48);
-    }
-
-    // Footer
-    ctx.fillStyle = 'rgba(160, 160, 176, 0.6)';
-    ctx.font = '12px "Segoe UI", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('⚠️ 由「瞌睡蟲檢查器 v2.0」生成 · 純屬娛樂', width / 2, height - 20);
-
-    return canvas;
-}
-
-async function downloadImage() {
-    try {
-        elements.downloadBtn.disabled = true;
-        elements.downloadBtn.innerHTML = '<span>⏳</span> 生成中...';
-
-        const canvas = await generateShareImage();
-
-        // Create download link
-        const link = document.createElement('a');
-        const timestamp = new Date().toISOString().slice(0, 10);
-        link.download = `瞌睡蟲報告_${timestamp}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-
-        elements.downloadBtn.disabled = false;
-        elements.downloadBtn.innerHTML = '<span>📥</span> 下載圖片';
-    } catch (error) {
-        console.error('Download failed:', error);
-        alert('下載失敗，請再試一次！');
-        elements.downloadBtn.disabled = false;
-        elements.downloadBtn.innerHTML = '<span>📥</span> 下載圖片';
-    }
-}
-
-async function shareImage() {
-    try {
-        elements.shareBtn.disabled = true;
-        elements.shareBtn.innerHTML = '<span>⏳</span> 處理中...';
-
-        const canvas = await generateShareImage();
-
-        // Convert canvas to blob
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-        const file = new File([blob], '瞌睡蟲報告.png', { type: 'image/png' });
-
-        // Check if Web Share API is available
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-                title: '🐛 我的瞌睡蟲檢測報告',
-                text: `我的瞌睡指數高達 ${currentReportData?.sleepyIndex || 87}%！快來幫我驅蟲！`,
-                files: [file]
-            });
-        } else if (navigator.share) {
-            // Fallback: share without file
-            await navigator.share({
-                title: '🐛 瞌睡蟲檢測報告',
-                text: `我的瞌睡指數高達 ${currentReportData?.sleepyIndex || 87}%！處方：${currentReportData?.prescription || '請客喝咖啡！'}`,
-                url: window.location.href
-            });
-        } else {
-            // No Web Share API - fallback to download
-            alert('您的瀏覽器不支援分享功能，將改為下載圖片。');
-            await downloadImage();
-        }
-
-        elements.shareBtn.disabled = false;
-        elements.shareBtn.innerHTML = '<span>📤</span> 分享結果';
-    } catch (error) {
-        if (error.name !== 'AbortError') {
-            console.error('Share failed:', error);
-        }
-        elements.shareBtn.disabled = false;
-        elements.shareBtn.innerHTML = '<span>📤</span> 分享結果';
-    }
 }
 
 // ===== Main Scan Flow =====
@@ -738,8 +493,6 @@ async function init() {
             resetScan();
             startScan();
         });
-        elements.downloadBtn.addEventListener('click', downloadImage);
-        elements.shareBtn.addEventListener('click', shareImage);
     } else {
         elements.loadingScreen.querySelector('.loading-text').textContent =
             '載入失敗，請重新整理頁面';
