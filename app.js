@@ -326,10 +326,13 @@ function handleCameraClick(event) {
     const midpoint = rect.width / 2;
 
     // Determine which side was clicked
-    if (clickX < midpoint) {
-        bugTargetSide = 'left';
+    const clickedSide = clickX < midpoint ? 'left' : 'right';
+
+    // Toggle logic: if already on this side, reset to normal mode
+    if (bugTargetSide === clickedSide) {
+        bugTargetSide = null; // Reset - each person gets their own bug
     } else {
-        bugTargetSide = 'right';
+        bugTargetSide = clickedSide;
     }
 
     // Immediately reposition bugs
