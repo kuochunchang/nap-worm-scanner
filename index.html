@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script defer src="app.js"></script>
 </head>
+
 <body>
     <!-- Loading Screen -->
     <div id="loading-screen" class="loading-screen">
@@ -36,7 +38,7 @@
             <div class="camera-container" id="camera-container">
                 <!-- Video Element -->
                 <video id="video" autoplay muted playsinline></video>
-                
+
                 <!-- Canvas for AR overlay -->
                 <canvas id="overlay"></canvas>
 
@@ -113,15 +115,27 @@
                     <p class="prescription-text" id="prescription">立刻請客喝咖啡驅蟲！</p>
                 </div>
             </div>
+            <div class="report-actions">
+                <button class="action-btn download-btn" id="download-btn">
+                    <span>📥</span> 下載圖片
+                </button>
+                <button class="action-btn share-btn" id="share-btn">
+                    <span>📤</span> 分享結果
+                </button>
+            </div>
             <button class="scan-again-btn" id="scan-again-btn">
                 <span>🔄</span> 再次掃描
             </button>
         </div>
 
+        <!-- Hidden canvas for screenshot generation -->
+        <canvas id="share-canvas" style="display: none;"></canvas>
+
         <!-- Footer -->
         <footer class="footer">
-            <p>⚠️ 本檢測結果純屬娛樂，如有雷同純屬巧合</p>
+
         </footer>
     </div>
 </body>
+
 </html>
